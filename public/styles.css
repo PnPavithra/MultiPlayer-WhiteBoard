@@ -1,0 +1,19 @@
+body, html{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+#toolbar{
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: wheat;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+canvas{
+    display: block;
+}

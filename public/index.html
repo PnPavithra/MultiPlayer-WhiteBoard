@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard</title>
+    <link rel = "stylesheet" href = "styles.css">
+</head>
+<body>
+    <div id = "toolbar">
+        <input type = "color" id = "colorPicker" value = "#110011">
+        <input type = "range" id = "brushSize" min =  "1" max = "30" value = "5">
+        
+        <button id = "penBtn">Pen</button>
+        <button id = "clearBtn">Clear</button>
+        <button id = "eraserBtn">Eraser</button>
+        <button id = "saveBtn">Save</button>
+
+    </div>
+
+    <canvas id = "board"></canvas>
+
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script type = "module" src = "js/main.js"></script>
+</body>
+</html>
