@@ -81,7 +81,7 @@ export class CanvasManager
 
             this.ctx.lineTo(px, py);
             this.ctx.strokeStyle = stroke.color;
-            this.lineWidth = stroke.size;
+            this.ctx.lineWidth = stroke.size;
             this.ctx.lineCap = "round";
             this.ctx.lineJoin = "round";
             this.ctx.stroke();
@@ -149,7 +149,7 @@ export class CanvasManager
 
         this.ctx.lineTo(point.x, point.y);
         this.ctx.strokeStyle = this.currentStroke.color;
-        this.lineWidth = this.currentStroke.size;
+        this.ctx.lineWidth = this.currentStroke.size;
         this.ctx.lineCap = "round";
         this.ctx.lineJoin = "round";
         this.ctx.stroke();
