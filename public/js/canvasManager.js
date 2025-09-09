@@ -101,6 +101,13 @@ export class CanvasManager
             }
         });
 
+        this.network.on("load:strokes", (strokes) => {
+            for(const stroke of strokes){
+                this.strokeManager.addStroke(stroke);
+            }
+            this.strokeManager.redraw();
+        })
+
         this.network.on("clear", ()=>
         {
             this.clearCanvas();
@@ -171,7 +178,13 @@ export class CanvasManager
         {
             this.strokeManager.addStroke(this.currentStroke);
             this.strokeManager.redraw();
-            this.network.emit("draw:end", {});
+
+            this.network.emit("draw:end", {
+                tool: this.currentStroke.tool,
+                color: this.currentStroke.color,
+                size: this.currentStroke.size,
+                points: this.currentStroke.points
+            });
         }
 
         this.drawing = false;

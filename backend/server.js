@@ -1,5 +1,7 @@
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
+const StrokeDB = require('./models/StrokeDB') 
 
 const http = require('http');
 
@@ -13,31 +15,54 @@ const io = new Server(server, {
     }
 });
 
+mongoose.connect("mongodb+srv://4kWhiteboardUser:4kUser@multiplayerwhiteboard.wohjytq.mongodb.net/?retryWrites=true&w=majority&appName=MultiplayerWhiteboard")
+.then(() => console.log("Connected to MongoDB Atlas"))
+.catch(err => console.error("MongoDB connection error: ", err));
+
 app.get('/', (req, res)=>{
     res.send("Whiteboard server is running!");
 });
 
-io.on('connection', (socket)=>{
+io.on('connection', async (socket)=>{
     console.log("A user connected:", socket.id);
+
+
+    const pastStrokes = await StrokeDB.find({});
+    socket.emit("load:strokes", pastStrokes);
 
     socket.on('disconnect', () => {
         console.log("user disconneted:", socket.id);
     });
 
+
     socket.on("draw:begin", (data)=>{
         socket.broadcast.emit("draw:begin", {userId: socket.id, ...data});
     });
+
 
     socket.on("draw:point", (data)=>{
         socket.broadcast.emit("draw:point", {userId: socket.id, ...data});
     });
 
-    socket.on("draw:end", (data)=>{
-        socket.broadcast.emit("draw:end",({userId: socket.id}));
+
+    socket.on("draw:end", async (data)=>{
+        const newStroke = new StrokeDB({
+            userId: socket.id,
+            tool: data.tool,
+            color: data.color,
+            size: data.size,
+            points: data.points
+        });
+        
+        await newStroke.save();
+        socket.broadcast.emit("draw:end",({userId: socket.id, ...data}));
     });
 
-    socket.on("clear", ()=>{
+
+    socket.on("clear", async ()=>{
+        await StrokeDB.deleteMany({});
         socket.broadcast.emit("clear");
+
     });
 });
 
