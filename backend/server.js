@@ -27,7 +27,7 @@ io.on('connection', async (socket)=>{
     console.log("A user connected:", socket.id);
 
 
-    const pastStrokes = await StrokeDB.find({});
+    const pastStrokes = await StrokeDB.find({ undone: false });
     socket.emit("load:strokes", pastStrokes);
 
     socket.on('disconnect', () => {
@@ -51,18 +51,25 @@ io.on('connection', async (socket)=>{
             tool: data.tool,
             color: data.color,
             size: data.size,
-            points: data.points
+            points: data.points,
+            id: data.id
         });
         
         await newStroke.save();
         socket.broadcast.emit("draw:end",({userId: socket.id, ...data}));
     });
 
+    socket.on("draw:undo", async ({ id })=>{
+        socket.broadcast.emit("draw:undo", { userId: socket.id, id });
+    });
+
+    socket.on("draw:redo", (stroke)=>{
+        socket.broadcast.emit("draw:redo", { userId: socket.id, stroke });
+    });
 
     socket.on("clear", async ()=>{
         await StrokeDB.deleteMany({});
         socket.broadcast.emit("clear");
-
     });
 });
 

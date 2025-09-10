@@ -9,6 +9,7 @@ const network = new NetworkManager(socket);
 
 socket.on("connect", () => {
     console.log("connected to server:", socket.id);
+    network.userId = socket.id;
     socket.emit("message", "Hello from client!");
 });
 

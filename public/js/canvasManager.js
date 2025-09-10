@@ -113,14 +113,19 @@ export class CanvasManager
             this.clearCanvas();
         });
 
-        this.network.on("draw:undo", ({id})=>{
-            const index = this.strokeManager.strokes.findIndex( s => s.id === id);
-            if(index !== -1) this.strokeManager.strokes.splice(index, 1);
-            
-            this.strokeManager.redraw();
+        this.network.on("draw:undo", ({ userId, id })=>{
+            const index = this.strokeManager.strokes.findIndex( 
+                s => s.userId === userId && s.id === id
+            );
+            if(index !== -1)
+            {     
+                this.strokeManager.strokes.splice(index, 1);
+                this.strokeManager.redraw();
+            }
         });
 
-        this.network.on("draw:redo", ({stroke}) =>{
+        this.network.on("draw:redo", ({userId, stroke}) =>{
+            stroke.userId = userId;
             this.strokeManager.addStroke(stroke);
             this.strokeManager.redraw();
         })
@@ -138,7 +143,7 @@ export class CanvasManager
         const size = this.toolManager.getToolSize();
 
         this.currentStroke = {
-            id: crypto.randomUUID(),
+            id: Date.now() + "-" + Math.random().toString(36).substr(2,9),
             userId: this.network.userId,
             tool, 
             color,
@@ -154,6 +159,7 @@ export class CanvasManager
         this.network.emit("draw:begin", 
         {
             id: this.currentStroke.id,
+            userId: this.currentStroke.userId,
             tool,
             color,
             size,
@@ -218,10 +224,11 @@ export class CanvasManager
         if(stroke){
                 const index = this.strokeManager.strokes.findIndex(s => s.id === stroke.id);
                 if (index !== -1) this.strokeManager.strokes.splice(index, 1);
+                
                 this.strokeManager.undoStack.push(stroke);
-
                 this.strokeManager.redraw();
-                this.network.emit("draw:undo", { id: stroke.id });
+
+                this.network.emit("draw:undo", { userId: this.network.userId, id: stroke.id });
         }
     }
 
@@ -240,7 +247,7 @@ export class CanvasManager
         this.strokeManager.strokes.push(stroke);
         this.strokeManager.redraw();
 
-        this.network.emit("draw:redo", { stroke });
+        this.network.emit("draw:redo", { userId: this.network.userId, stroke });
     }
 
     clearCanvas() 
