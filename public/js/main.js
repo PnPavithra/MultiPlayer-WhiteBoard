@@ -48,6 +48,16 @@ brushSize.addEventListener("input", () => {
     toolManager.updatePenSettings();
 });
 
+const undoBtn = document.getElementById("undo");
+undoBtn.addEventListener("click", ()=>{
+    canvasManager.undo();
+});
+
+const redoBtn = document.getElementById("redo");
+redoBtn.addEventListener("click", ()=>{
+    canvasManager.redo();
+});
+
 window.brush = brushSettings;
 window.canvas = canvasManager;
 window.tool = toolManager;

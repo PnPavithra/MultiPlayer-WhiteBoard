@@ -5,11 +5,25 @@ export class StrokeManager
     {
         this.ctx = ctx;
         this.strokes = [];
+        this.undoStack = [];
     }
 
     addStroke(stroke)
     {
         this.strokes.push(stroke);
+        this.undoStack = [];
+    }
+
+    undo(){
+        const stroke = this.strokes.pop();
+        if (stroke) this.undoStack.push(stroke);
+        return stroke;
+    }
+
+    redo(){
+        const stroke = this.undoStack.pop();
+        if (stroke) this.strokes.push(stroke);
+        return stroke;
     }
 
     drawStroke(stroke)

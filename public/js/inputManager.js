@@ -1,42 +1,16 @@
-import { StrokeManager } from "./strokeManager.js";
-
-export class CanvasManager
-{
-    constructor(canvasId, brushSettings, toolManager, network)
-    {
-        this.canvas = document.getElementById(canvasId);
+export class InputManager{
+    constructor(canvas, toolManager, strokeManager, canvasManager, network){
+        this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
-
-        this.brushSettings = brushSettings;
+        
+        this.strokeManager = strokeManager;
         this.toolManager = toolManager;
         this.network = network;
+        this.canvasManager = canvasManager;
 
-        this.strokeManager = new StrokeManager(this.ctx);
         this.currentStroke = null;
-
         this.remoteStrokes = {};
-
         this.drawing = false;
-
-        this.resizeCanvas();
-
-        window.addEventListener("resize", ()=>
-        {
-            this.resizeCanvas();
-            this.strokeManager.redraw();
-        });
-
-        this.setupEvents();
-        this.setupNetworkEvents();
-    }
-
-    resizeCanvas()
-    {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-
-        this.ctx.fillStyle = "white";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     setupEvents()
@@ -48,7 +22,7 @@ export class CanvasManager
 
         this.canvas.style.touchAction = "none";
     }
-
+    
     setupNetworkEvents()
     {
         this.network.on("draw:begin", ({ userId, tool, color, size, clientX, clientY }) => {
@@ -90,9 +64,9 @@ export class CanvasManager
             this.ctx.moveTo(px,py);
         });
 
-        this.network.on("draw:end", ({userId, id, tool,color, size, points})=>
+        this.network.on("draw:end", ({userId})=>
         {
-            const stroke = {id, tool,color, size, points};
+            const stroke = this.remoteStrokes[userId];
 
             if(stroke)
             {
@@ -112,18 +86,6 @@ export class CanvasManager
         {
             this.clearCanvas();
         });
-
-        this.network.on("draw:undo", ({id})=>{
-            const index = this.strokeManager.strokes.findIndex( s => s.id === id);
-            if(index !== -1) this.strokeManager.strokes.splice(index, 1);
-            
-            this.strokeManager.redraw();
-        });
-
-        this.network.on("draw:redo", ({stroke}) =>{
-            this.strokeManager.addStroke(stroke);
-            this.strokeManager.redraw();
-        })
     }
 
     startDrawing(e)
@@ -138,8 +100,6 @@ export class CanvasManager
         const size = this.toolManager.getToolSize();
 
         this.currentStroke = {
-            id: crypto.randomUUID(),
-            userId: this.network.userId,
             tool, 
             color,
             size,
@@ -153,7 +113,6 @@ export class CanvasManager
 
         this.network.emit("draw:begin", 
         {
-            id: this.currentStroke.id,
             tool,
             color,
             size,
@@ -195,8 +154,6 @@ export class CanvasManager
             this.strokeManager.redraw();
 
             this.network.emit("draw:end", {
-                id: this.currentStroke.id,
-                userId: this.currentStroke.userId,
                 tool: this.currentStroke.tool,
                 color: this.currentStroke.color,
                 size: this.currentStroke.size,
@@ -208,52 +165,4 @@ export class CanvasManager
         this.currentStroke = null;
     }
 
-    undo()
-    {
-        const stroke = this.strokeManager.strokes
-            .slice()
-            .reverse()
-            .find(s => s.userId === this.network.userId);
-
-        if(stroke){
-                const index = this.strokeManager.strokes.findIndex(s => s.id === stroke.id);
-                if (index !== -1) this.strokeManager.strokes.splice(index, 1);
-                this.strokeManager.undoStack.push(stroke);
-
-                this.strokeManager.redraw();
-                this.network.emit("draw:undo", { id: stroke.id });
-        }
-    }
-
-    redo()
-    {
-        const index = this.strokeManager.undoStack
-        .slice()
-        .reverse()
-        .findIndex(s => s.userId === this.network.userId);
-        
-        if (index === -1) return;
-
-        const stroke = this.strokeManager.undoStack.splice(
-        this.strokeManager.undoStack.length - 1 - index, 1)[0];
-
-        this.strokeManager.strokes.push(stroke);
-        this.strokeManager.redraw();
-
-        this.network.emit("draw:redo", { stroke });
-    }
-
-    clearCanvas() 
-    {
-        this.strokeManager.strokes = [];
-        this.strokeManager.redraw();
-    }
-
-    saveImage()
-    {
-        const link = document.createElement("a");
-        link.download = "whiteBoard.png";
-        link.href = this.canvas.toDataURL("image/png");
-        link.click();
-    }
 }
