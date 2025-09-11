@@ -23,11 +23,22 @@ app.get('/', (req, res)=>{
     res.send("Whiteboard server is running!");
 });
 
+app.get("/strokes", async(req, res) => {
+    try{
+        const strokes = await StrokeDB.find({});
+        res.join(strokes);
+    }
+
+    catch(err){
+        res.status(500).json({ error: "failed to load strokes "});
+    }
+});
+
 io.on('connection', async (socket)=>{
     console.log("A user connected:", socket.id);
 
 
-    const pastStrokes = await StrokeDB.find({ undone: false });
+    const pastStrokes = await StrokeDB.find({});
     socket.emit("load:strokes", pastStrokes);
 
     socket.on('disconnect', () => {
@@ -60,11 +71,15 @@ io.on('connection', async (socket)=>{
     });
 
     socket.on("draw:undo", async ({ id })=>{
-        socket.broadcast.emit("draw:undo", { userId: socket.id, id });
+            await StrokeDB.deleteOne({ id, userId: socket.id });
+            socket.broadcast.emit("draw:undo", { userId: socket.id, id });
     });
 
-    socket.on("draw:redo", (stroke)=>{
+    socket.on("draw:redo", async (stroke)=>{
+        const newStroke = new StrokeDB({ ...stroke, userId: socket.id });
+        await newStroke.save();
         socket.broadcast.emit("draw:redo", { userId: socket.id, stroke });
+        
     });
 
     socket.on("clear", async ()=>{

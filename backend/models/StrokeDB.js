@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const strokeSchema = new mongoose.Schema({
+    id: String,
     userId: String,
     tool: String,
     color: String,

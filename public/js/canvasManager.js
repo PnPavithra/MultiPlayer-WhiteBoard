@@ -30,13 +30,29 @@ export class CanvasManager
         this.setupNetworkEvents();
     }
 
-    resizeCanvas()
+    async resizeCanvas()
     {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
 
         this.ctx.fillStyle = "white";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        try{
+            const res = await fetch("http://localhost:3000/strokes");
+            const strokes = await res.json();
+
+            this.strokeManager.strokes = [];
+            for(const stroke of strokes){
+                this.strokeManager.addStroke(stroke);
+            }
+
+            this.strokeManager.redraw();
+        }
+
+        catch(err){
+            console.error(" failed to load strokes on resize: ", err);
+        }
     }
 
     setupEvents()
@@ -246,6 +262,8 @@ export class CanvasManager
 
         this.strokeManager.strokes.push(stroke);
         this.strokeManager.redraw();
+
+        this.ctx.beginPath();
 
         this.network.emit("draw:redo", { userId: this.network.userId, stroke });
     }
