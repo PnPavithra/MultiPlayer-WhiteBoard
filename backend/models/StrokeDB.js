@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const strokeSchema = new mongoose.Schema({
-    id: String,
     userId: String,
     tool: String,
     color: String,
@@ -11,7 +10,9 @@ const strokeSchema = new mongoose.Schema({
         { x: Number, y: Number }
     ],
 
-    createdAt: { type: Date, default: Date.now}
+    id: String,
+    createdAt: { type: Date, default: Date.now},
+    undone: { type: Boolean, default: false}
 });
 
 module.exports = mongoose.model('StrokeDB', strokeSchema);
