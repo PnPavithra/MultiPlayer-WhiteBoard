@@ -6,9 +6,7 @@ const strokeSchema = new mongoose.Schema({
     color: String,
     size: Number,
 
-    points:[
-        { x: Number, y: Number }
-    ],
+    points:[{ x: Number, y: Number }],
 
     id: String,
     createdAt: { type: Date, default: Date.now},

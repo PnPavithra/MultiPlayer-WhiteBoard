@@ -3,72 +3,75 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const StrokeDB = require('./models/StrokeDB');
-require("dotenv").config({ path: "../.env" }); // Load .env first
+require("dotenv").config({ path: "../.env" });
 
 const http = require('http');
 const { Server } = require('socket.io');
 const server = http.createServer(app);
 
-const io = new Server(server, {
+const io = new Server(server, 
+{
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
 
-// Read credentials from .env
 const mongoUser = process.env.MONGO_USER;
 const mongoPass = process.env.MONGO_PASS;
 const mongoHost = process.env.MONGO_HOST;
 const mongoDB = process.env.MONGO_DB;
 
-// Verify environment variables
-if (!mongoUser || !mongoPass || !mongoHost || !mongoDB) {
+if (!mongoUser || !mongoPass || !mongoHost || !mongoDB) 
+{
     console.error("Error: Missing MongoDB environment variables in .env");
     process.exit(1);
 }
 
-// Build MongoDB connection URI
 const uri = `mongodb+srv://${mongoUser}:${mongoPass}@${mongoHost}/${mongoDB}?retryWrites=true&w=majority`;
 
-// Connect to MongoDB
 mongoose.connect(uri)
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
 
-// Basic route
-app.get('/', (req, res) => {
+app.get('/', (req, res) => 
+{
     res.send("Whiteboard server is running!");
 });
 
-// Get strokes API
-app.get("/strokes", async (req, res) => {
-    try {
+app.get("/strokes", async (req, res) => 
+{
+    try 
+    {
         const strokes = await StrokeDB.find({ undone: false });
         res.json(strokes);
-    } catch (err) {
+    } 
+    
+    catch (err) 
+    {
         res.status(500).json({ error: "Failed to load strokes" });
     }
 });
 
-// Socket.IO
-io.on("connection", async (socket) => {
+io.on("connection", async (socket) => 
+{
     console.log("New client connected:", socket.id);
 
-    // Send all active strokes to new client
     const strokes = await StrokeDB.find({ undone: false });
     socket.emit("load:strokes", strokes);
 
-    // --- Draw events ---
-    socket.on("draw:begin", (data) => {
+    socket.on("draw:begin", (data) => 
+    {
         socket.broadcast.emit("draw:begin", { userId: socket.id, ...data });
     });
 
-    socket.on("draw:point", (data) => {
+    socket.on("draw:point", (data) => 
+    {
         socket.broadcast.emit("draw:point", { userId: socket.id, ...data });
     });
 
-    socket.on("draw:end", async (data) => {
+    socket.on("draw:end", async (data) => 
+    {
         const newStroke = new StrokeDB({
             userId: socket.id,
             id: data.id,
@@ -82,28 +85,32 @@ io.on("connection", async (socket) => {
         socket.broadcast.emit("draw:end", { userId: socket.id, ...data });
     });
 
-    socket.on("draw:undo", async ({ id }) => {
+    socket.on("draw:undo", async ({ id }) => 
+    {
         await StrokeDB.updateOne({ id }, { $set: { undone: true } });
         socket.broadcast.emit("draw:undo", { id });
     });
 
-    socket.on("draw:redo", async (stroke) => {
+    socket.on("draw:redo", async (stroke) => 
+    {
         await StrokeDB.updateOne({ id: stroke.id }, { $set: { undone: false } });
         socket.broadcast.emit("draw:redo", stroke);
     });
 
-    socket.on("clear", async () => {
+    socket.on("clear", async () => 
+    {
         await StrokeDB.updateMany({}, { $set: { undone: true } });
         socket.broadcast.emit("clear");
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", () => 
+    {
         console.log("Client disconnected:", socket.id);
     });
 });
 
-// Start server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, () => 
+{
     console.log(`Server is running on port ${PORT}`);
 });
