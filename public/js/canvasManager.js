@@ -110,6 +110,16 @@ export class CanvasManager
         });
     }
 
+    getCanvasCoordinates(e)
+    {
+        const rect = this.canvas.getBoundingClientRect();
+
+        return {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
     startDrawing(e) 
     {
         this.drawing = true;
@@ -120,6 +130,8 @@ export class CanvasManager
         const color = this.toolManager.getToolColor();
         const size = this.toolManager.getToolSize();
 
+        const { x, y } = this.getCanvasCoordinates(e);
+
         this.currentStroke = 
         {
             id: Date.now() + "-" + Math.random().toString(36).substr(2, 9),
@@ -129,15 +141,15 @@ export class CanvasManager
         };
 
         this.ctx.beginPath();
-        this.ctx.moveTo(e.clientX, e.clientY);
-        this.currentStroke.points.push({ x: e.clientX, y: e.clientY });
+        this.ctx.moveTo(x, y);
+        this.currentStroke.points.push({ x, y });
 
         this.network.emit("draw:begin", 
         {
             id: this.currentStroke.id,
             tool, color, size,
-            clientX: e.clientX / this.canvas.width,
-            clientY: e.clientY / this.canvas.height
+            clientX: x / this.canvas.width,
+            clientY: y / this.canvas.height
         });
     }
 
@@ -145,10 +157,10 @@ export class CanvasManager
     {
         if (!this.drawing || !this.currentStroke) return;
 
-        const point = { x: e.clientX, y: e.clientY };
-        this.currentStroke.points.push(point);
+        const { x, y } = this.getCanvasCoordinates(e);
+        this.currentStroke.points.push({ x, y });
 
-        this.ctx.lineTo(point.x, point.y);
+        this.ctx.lineTo(x, y);
         this.ctx.strokeStyle = this.currentStroke.color;
         this.ctx.lineWidth = this.currentStroke.size;
         this.ctx.lineCap = "round";
@@ -156,12 +168,12 @@ export class CanvasManager
         this.ctx.stroke();
 
         this.ctx.beginPath();
-        this.ctx.moveTo(point.x, point.y);
+        this.ctx.moveTo(x, y);
 
         this.network.emit("draw:point", 
         {
-            x: e.clientX / this.canvas.width,
-            y: e.clientY / this.canvas.height
+            x: x / this.canvas.width,
+            y: y / this.canvas.height
         });
     }
 

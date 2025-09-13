@@ -9,6 +9,7 @@ const strokeSchema = new mongoose.Schema({
     points:[{ x: Number, y: Number }],
 
     id: String,
+    roomId: String,
     createdAt: { type: Date, default: Date.now},
     undone: { type: Boolean, default: false}
 });

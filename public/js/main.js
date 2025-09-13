@@ -1,16 +1,17 @@
 import { BrushSettings } from "./brushSettings.js";
 import { CanvasManager } from "./canvasManager.js";
-import { NetworkManager } from "./NetworkManager.js";
+import { NetworkManager } from "./networkManager.js";
 import { ToolManager } from "./toolManager.js";
 
 const socket = io("http://localhost:3000");
-
 const network = new NetworkManager(socket);
 
+const roomId = window.location.pathname.split("/room/")[1];
+
 socket.on("connect", () => {
-    console.log("connected to server:", socket.id);
+    console.log("connected to server:", socket.id, "joining room: ", roomId);
     network.userId = socket.id;
-    socket.emit("message", "Hello from client!");
+    socket.emit("joinRoom", roomId);
 });
 
 const brushSettings = new BrushSettings("colorPicker", "brushSize");
