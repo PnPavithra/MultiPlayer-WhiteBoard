@@ -3,7 +3,7 @@ import { CanvasManager } from "./canvasManager.js";
 import { NetworkManager } from "./networkManager.js";
 import { ToolManager } from "./toolManager.js";
 
-const socket = io("http://localhost:3000");
+const socket = io();
 const network = new NetworkManager(socket);
 
 const roomId = window.location.pathname.split("/room/")[1];

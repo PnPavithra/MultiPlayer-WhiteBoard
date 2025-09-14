@@ -141,31 +141,6 @@ io.on("connection", async (socket) =>
         socket.to(socket.roomId).emit("clear");
     });
 
-    // //
-    // socket.on("user:leaving", (roomId) => 
-    // {
-    //     const room = io.sockets.adapter.rooms.get(roomId);
-
-    //     if(!room || room.size === 0 || room.size === 1)
-    //     {
-    //         io.to(socket.id).emit("user:leaving", 
-    //         {
-    //             message: "All usershave left, save your changes before it gets deleted! You have 10 sseconds"
-    //         });
-
-    //         setTimeout(async () =>
-    //         {
-    //             const checkRoom = io.sockets.adapter.rooms.get(socket.roomId);
-
-    //             if(!checkRoom || checkRoom.size === 0)
-    //             {
-    //                 await StrokeDB.deleteMany({ roomId });
-    //                 console.log(`Deleted records for room ${socket.roomId}`);
-    //             }
-    //         }, 10000);
-    //     }
-    // });
-
 
     //
     socket.on("disconnect", async () => {
