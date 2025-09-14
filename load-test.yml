@@ -1,0 +1,16 @@
+config:
+  target: "https://multiplayer-whiteboard-production-6d8a.up.railway.app/"
+  phases:
+    - duration: 30
+      arrivalRate: 50
+    - duration: 30
+      arrivalRate: 100
+    - duration: 30
+      arrivalRate: 200
+    - duration: 30
+      arrivalRate: 400
+
+scenarios:
+  - flow:
+      - get:
+          url: "/"
