@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/home.css">
     <title>Whiteboard Rooms</title>
 </head>
 <body>
+  <div class="container">
     <h1>Welcome to Whiteboard</h1>
-    
-    <button id = "createRoomBtn">Create Room</button>
 
-    <p id = "roomLink" style = "display: none;">
-        share this link: <span id = "generatedLink"></span>
+    <div class="create-room">
+      <button id="createRoomBtn">Create Room</button>
+    </div>
+
+    <p id="roomLink" style="display: none;">
+      Share this link: <span id="generatedLink"></span>
     </p>
 
-    <br><br>
-    
-    <input type = "text" id = "joinRoomInput" placeholder="Enter room code or link"/>
-    <button id = "joinRoomBtn">Join Room</button>
-
-    <script src = "/socket.io/socket.io.js"></script>
-    <script type = "module" src = "/js/home.js"></script>
+    <div class="join-room">
+      <input type="text" id="joinRoomInput" placeholder="Enter room code or link"/>
+      <button id="joinRoomBtn">Join Room</button>
+    </div>
+  </div>
 </body>
+
 </html>
